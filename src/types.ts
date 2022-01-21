@@ -11,14 +11,25 @@ type Await<T> = T extends PromiseLike<infer U> ? U : T;
 
 // 处理后的方法的类型
 export type ProcessFuncType<
+	CoreValue extends BasedValueType,
 	Config extends PipeValueConfigType,
 	BaseReturnType extends (...args: any) => any,
 	LastFunction extends (...args: any) => any
 	> = (
-	custom?: (value: Await<ReturnType<BaseReturnType>>, replaceValue: (value: BasedValueType) => void) => (unknown | Promise<unknown>),
-) => PipeValueType<Config, LastFunction>;
+	custom?: (value: Await<ReturnType<BaseReturnType>>, replaceValue: (value: Partial<CoreValue>) => void) => any,
+) => PipeValueType<CoreValue, Config, LastFunction>;
 
 // 创建出来的value的类型
-export type PipeValueType<Config extends PipeValueConfigType, LastFunction extends (...args: any) => any = () => BasedValueType> = {
-	[key in keyof Config]: ProcessFuncType<Config, Config[key], LastFunction>;
+export type PipeValueType<
+	CoreValue extends BasedValueType,
+	Config extends PipeValueConfigType,
+	LastFunction extends (...args: any) => any = () => BasedValueType
+	> = {
+	[key in keyof Config]: ProcessFuncType<CoreValue, Config, Config[key], LastFunction>;
+};
+
+// 简写的配置项
+export type PipeConfigWithCoreFunc<Value extends BasedValueType, Config extends PipeValueConfigType> = Config & {
+	pipeStart(): PipeValueType<Value, Config>;
+	pipeEnd(): Promise<void>;
 };

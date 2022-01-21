@@ -1,10 +1,11 @@
-import { BasedValueType, PipeValueConfigType, PipeValueType } from './types';
+import { BasedValueType, PipeConfigWithCoreFunc, PipeValueConfigType, PipeValueType } from './types';
 
 class CoreValueFactory {
 	// 理解为value的ref
 	coreValue: BasedValueType;
 	// functions列表
 	funcArray: Array<(...args: any) => any>;
+	
 	constructor(value: BasedValueType) {
 		this.coreValue = value;
 		this.funcArray = [];
@@ -48,20 +49,17 @@ function createCoreValue<Value extends BasedValueType = BasedValueType>(value: V
 	return CoreValueFactory.createCoreValue(value);
 }
 
-function createPipeValue<Config extends PipeValueConfigType>(valueFactory: CoreValueFactory, config?: Config): PipeValueType<Config> {
+function createPipeValue<CoreValue extends BasedValueType, Config extends PipeValueConfigType>(valueFactory: CoreValueFactory, config?: Config): PipeValueType<CoreValue, Config> {
 	// 添加默认的pipeStart和pipeEnd
 	let pipeValue = {
-		pipeStart(): PipeValueType<Config> {
+		pipeStart(): PipeValueType<CoreValue, Config> {
 			valueFactory.initFuncArray();
 			return pipeValue;
 		},
 		async pipeEnd(): Promise<void> {
 			await valueFactory.execFuncArray();
-		}
-	} as PipeValueType<Config & {
-		pipeStart(): PipeValueType<Config>;
-		pipeEnd(): Promise<void>;
-	}>;
+		},
+	} as PipeValueType<CoreValue, PipeConfigWithCoreFunc<CoreValue, Config>>;
 	// 空的时候返回空
 	if (!config) {
 		return pipeValue;
@@ -77,16 +75,17 @@ function createPipeValue<Config extends PipeValueConfigType>(valueFactory: CoreV
 				}
 			});
 			return pipeValue;
-		}
+		};
 	}
-
+	
 	return pipeValue;
 }
 
-export default function createPipe<Value extends BasedValueType, Config extends PipeValueConfigType> (value: Value, pipeFuncConfig: Config) {
+export default function createPipe<Value extends BasedValueType,
+	Config extends PipeValueConfigType>(
+	value: Value,
+	pipeFuncConfig: Config,
+): PipeValueType<Value, PipeConfigWithCoreFunc<Value, Config>> {
 	const coreValue = createCoreValue(value);
-	return createPipeValue(coreValue, pipeFuncConfig as Config & {
-		pipeStart(): PipeValueType<Config>;
-		pipeEnd(): Promise<void>;
-	});
+	return createPipeValue(coreValue, pipeFuncConfig as PipeConfigWithCoreFunc<Value, Config>);
 }
