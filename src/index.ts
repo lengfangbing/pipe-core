@@ -73,7 +73,7 @@ function createPipeValue<Config extends PipeValueConfigType>(valueFactory: CoreV
 				// 执行config基本的数据操作方法
 				const tempValue = await func.call(null, valueFactory.getValue());
 				if (customFunc) {
-					await customFunc(tempValue, valueFactory.setValue);
+					await customFunc(tempValue, valueFactory.setValue.bind(valueFactory));
 				}
 			});
 			return pipeValue;
