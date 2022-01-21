@@ -49,7 +49,7 @@ function createCoreValue<Value extends BasedValueType = BasedValueType>(value: V
 	return CoreValueFactory.createCoreValue(value);
 }
 
-function createPipeValue<CoreValue extends BasedValueType, Config extends PipeValueConfigType>(valueFactory: CoreValueFactory, config?: Config): PipeValueType<CoreValue, Config> {
+function createPipeValue<CoreValue extends BasedValueType, Config extends PipeValueConfigType>(valueFactory: CoreValueFactory, config?: Config) {
 	// 添加默认的pipeStart和pipeEnd
 	let pipeValue = {
 		pipeStart(): PipeValueType<CoreValue, Config> {
@@ -59,14 +59,14 @@ function createPipeValue<CoreValue extends BasedValueType, Config extends PipeVa
 		async pipeEnd(): Promise<void> {
 			await valueFactory.execFuncArray();
 		},
-	} as PipeValueType<CoreValue, PipeConfigWithCoreFunc<CoreValue, Config>>;
+	} as unknown as PipeValueType<CoreValue, PipeConfigWithCoreFunc<CoreValue, Config>>;
 	// 空的时候返回空
 	if (!config) {
 		return pipeValue;
 	}
 	for (const name in config) {
 		const func = config[name];
-		pipeValue[name] = customFunc => {
+		pipeValue[name] = (customFunc => {
 			valueFactory.appendFunc(async () => {
 				// 执行config基本的数据操作方法
 				const tempValue = await func.call(null, valueFactory.getValue());
@@ -75,7 +75,7 @@ function createPipeValue<CoreValue extends BasedValueType, Config extends PipeVa
 				}
 			});
 			return pipeValue;
-		};
+		}) as PipeValueType<CoreValue, Config>[keyof Config];
 	}
 	
 	return pipeValue;
@@ -85,7 +85,8 @@ export default function createPipe<Value extends BasedValueType,
 	Config extends PipeValueConfigType>(
 	value: Value,
 	pipeFuncConfig: Config,
-): PipeValueType<Value, PipeConfigWithCoreFunc<Value, Config>> {
+) {
 	const coreValue = createCoreValue(value);
-	return createPipeValue(coreValue, pipeFuncConfig as PipeConfigWithCoreFunc<Value, Config>);
+	// 把开始的value的pipeEnd剔除掉
+	return createPipeValue(coreValue, pipeFuncConfig as PipeConfigWithCoreFunc<Value, Config>) as Omit<PipeValueType<Value, PipeConfigWithCoreFunc<Value, Config>>, 'pipeEnd'>;
 }

@@ -17,7 +17,10 @@ export type ProcessFuncType<
 	LastFunction extends (...args: any) => any
 	> = (
 	custom?: (value: Await<ReturnType<BaseReturnType>>, replaceValue: (value: Partial<CoreValue>) => void) => any,
-) => PipeValueType<CoreValue, Config, LastFunction>;
+) => Omit<PipeValueType<CoreValue, Config, LastFunction>, 'pipeEnd' | 'pipeStart'> & {
+	// 把pipeStart类型剔除，并修改pipeEnd的类型
+	pipeEnd(): Promise<void>;
+};
 
 // 创建出来的value的类型
 export type PipeValueType<
