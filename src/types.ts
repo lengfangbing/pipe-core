@@ -15,7 +15,7 @@ export type ProcessFuncType<
 	BaseReturnType extends (...args: any) => any,
 	LastFunction extends (...args: any) => any
 	> = (
-	custom: (value: Await<ReturnType<BaseReturnType>>, replaceValue: (value: BasedValueType) => void) => (unknown | Promise<unknown>),
+	custom?: (value: Await<ReturnType<BaseReturnType>>, replaceValue: (value: BasedValueType) => void) => (unknown | Promise<unknown>),
 ) => PipeValueType<Config, LastFunction>;
 
 // 创建出来的value的类型
