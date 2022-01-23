@@ -1,6 +1,6 @@
 {
   "name": "@bell-crow/pipe-core",
-  "version": "0.0.1-beta.1",
+  "version": "1.0.0",
   "description": "process data like a pipeline",
   "main": "lib/esm/index.js",
   "scripts": {
