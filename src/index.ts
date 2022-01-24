@@ -82,7 +82,7 @@ function createPipeValue<CoreValue extends BasedValueType, Config extends PipeVa
 }
 
 export default function createPipe<Value extends BasedValueType,
-	Config extends PipeValueConfigType>(
+	Config extends PipeValueConfigType<Value>>(
 	value: Value,
 	pipeFuncConfig: Config,
 ) {
