@@ -1,11 +1,12 @@
 {
   "name": "@bell-crow/pipe-core",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "process data like a pipeline",
   "main": "lib/esm/index.js",
   "scripts": {
     "build": "rollup -c"
   },
+  "keywords": ["process", "pipeline", "crow", "bell"],
   "author": "lengfangbing",
   "license": "ISC",
   "devDependencies": {
