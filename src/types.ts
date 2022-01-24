@@ -9,6 +9,14 @@ export type PipeValueConfigType<GetValue = any, ReturnValue = any> = Record<stri
 
 type Await<T> = T extends PromiseLike<infer U> ? U : T;
 
+type PipeStartConfigType<Value extends BasedValueType, Config extends PipeValueConfigType> = {
+	pipeStart(): PipeValueType<Value, Config>;
+};
+
+type PipeEndConfigType = {
+	pipeEnd(): Promise<void>;
+};
+
 // 处理后的方法的类型
 export type ProcessFuncType<
 	CoreValue extends BasedValueType,
@@ -17,10 +25,9 @@ export type ProcessFuncType<
 	LastFunction extends (...args: any) => any
 	> = (
 	custom?: (value: Await<ReturnType<BaseReturnType>>, replaceValue: (value: Partial<CoreValue>) => void) => any,
-) => Omit<PipeValueType<CoreValue, Config, LastFunction>, 'pipeEnd' | 'pipeStart'> & {
-	// 把pipeStart类型剔除，并修改pipeEnd的类型
-	pipeEnd(): Promise<void>;
-};
+) => Omit<PipeValueType<CoreValue, Config, LastFunction>, 'pipeEnd' | 'pipeStart'> &
+     // 把pipeStart类型剔除，并修改pipeEnd的类型
+     PipeEndConfigType;
 
 // 创建出来的value的类型
 export type PipeValueType<
@@ -32,7 +39,4 @@ export type PipeValueType<
 };
 
 // 简写的配置项
-export type PipeConfigWithCoreFunc<Value extends BasedValueType, Config extends PipeValueConfigType> = Config & {
-	pipeStart(): PipeValueType<Value, Config>;
-	pipeEnd(): Promise<void>;
-};
+export type PipeConfigWithCoreFunc<Value extends BasedValueType, Config extends PipeValueConfigType> = Config & PipeStartConfigType<Value, Config> & PipeEndConfigType;
