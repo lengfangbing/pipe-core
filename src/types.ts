@@ -17,6 +17,16 @@ type PipeEndConfigType = {
 	pipeEnd(): Promise<void>;
 };
 
+// 简写的custom方法的value参数类型
+export type CustomValueParamTypeAlias<BaseReturnType extends (...args: any) => any> = Await<ReturnType<BaseReturnType>>
+
+// 简写的过程方法类型
+export type ProcessFuncTypeAlias<
+	CoreValue extends BasedValueType,
+	Config extends PipeValueConfigType,
+	LastFunction extends (...args: any) => any
+	> = Omit<PipeValueType<CoreValue, Config, LastFunction>, 'pipeEnd' | 'pipeStart'> & PipeEndConfigType;
+
 // 处理后的方法的类型
 export type ProcessFuncType<
 	CoreValue extends BasedValueType,
@@ -24,9 +34,9 @@ export type ProcessFuncType<
 	BaseReturnType extends (...args: any) => any,
 	LastFunction extends (...args: any) => any
 	> = (
-	custom?: (value: Await<ReturnType<BaseReturnType>>, replaceValue: (value: Partial<CoreValue>) => void) => any,
+	custom?: (value: CustomValueParamTypeAlias<BaseReturnType>, replaceValue: (value: Partial<CoreValue>) => void) => any,
 	// 把pipeStart类型剔除，并修改pipeEnd的类型
-) => Omit<PipeValueType<CoreValue, Config, LastFunction>, 'pipeEnd' | 'pipeStart'> & PipeEndConfigType;
+) => ProcessFuncTypeAlias<CoreValue, Config, LastFunction>;
 
 
 // 创建出来的value的类型
