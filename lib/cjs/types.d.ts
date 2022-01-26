@@ -8,7 +8,9 @@ declare type PipeStartConfigType<Value extends BasedValueType, Config extends Pi
 declare type PipeEndConfigType = {
     pipeEnd(): Promise<void>;
 };
-export declare type ProcessFuncType<CoreValue extends BasedValueType, Config extends PipeValueConfigType, BaseReturnType extends (...args: any) => any, LastFunction extends (...args: any) => any> = (custom?: (value: Await<ReturnType<BaseReturnType>>, replaceValue: (value: Partial<CoreValue>) => void) => any) => Omit<PipeValueType<CoreValue, Config, LastFunction>, 'pipeEnd' | 'pipeStart'> & PipeEndConfigType;
+export declare type CustomValueParamTypeAlias<BaseReturnType extends (...args: any) => any> = Await<ReturnType<BaseReturnType>>;
+export declare type ProcessFuncTypeAlias<CoreValue extends BasedValueType, Config extends PipeValueConfigType, LastFunction extends (...args: any) => any> = Omit<PipeValueType<CoreValue, Config, LastFunction>, 'pipeEnd' | 'pipeStart'> & PipeEndConfigType;
+export declare type ProcessFuncType<CoreValue extends BasedValueType, Config extends PipeValueConfigType, BaseReturnType extends (...args: any) => any, LastFunction extends (...args: any) => any> = (custom?: (value: CustomValueParamTypeAlias<BaseReturnType>, replaceValue: (value: Partial<CoreValue>) => void) => any) => ProcessFuncTypeAlias<CoreValue, Config, LastFunction>;
 export declare type PipeValueType<CoreValue extends BasedValueType, Config extends PipeValueConfigType, LastFunction extends (...args: any) => any = () => BasedValueType> = {
     [key in keyof Config]: ProcessFuncType<CoreValue, Config, Config[key], LastFunction>;
 };
