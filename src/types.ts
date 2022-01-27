@@ -1,3 +1,4 @@
+/* eslint-disable no-use-before-define */
 // 基本的value类型
 export type BasedValueType = Record<string, any>;
 
@@ -10,11 +11,11 @@ export type PipeValueConfigType<GetValue = any, ReturnValue = any> = Record<stri
 type Await<T> = T extends PromiseLike<infer U> ? U : T;
 
 type PipeStartConfigType<Value extends BasedValueType, Config extends PipeValueConfigType> = {
-	pipeStart(): PipeValueType<Value, Config>;
+  pipeStart(): PipeValueType<Value, Config>;
 };
 
 type PipeEndConfigType = {
-	pipeEnd(): Promise<void>;
+  pipeEnd(): Promise<void>;
 };
 
 // 简写的custom方法的value参数类型
@@ -22,30 +23,25 @@ export type CustomValueParamTypeAlias<BaseReturnType extends (...args: any) => a
 
 // 简写的过程方法类型
 export type ProcessFuncTypeAlias<
-	CoreValue extends BasedValueType,
-	Config extends PipeValueConfigType,
-	LastFunction extends (...args: any) => any
-	> = Omit<PipeValueType<CoreValue, Config, LastFunction>, 'pipeEnd' | 'pipeStart'> & PipeEndConfigType;
+  CoreValue extends BasedValueType,
+  Config extends PipeValueConfigType,
+  LastFunction extends (...args: any) => any
+  > = Omit<PipeValueType<CoreValue, Config, LastFunction>, 'pipeEnd' | 'pipeStart'> & PipeEndConfigType;
 
 // 处理后的方法的类型
 export type ProcessFuncType<
-	CoreValue extends BasedValueType,
-	Config extends PipeValueConfigType,
-	BaseReturnType extends (...args: any) => any,
-	LastFunction extends (...args: any) => any
-	> = (
-	custom?: (value: CustomValueParamTypeAlias<BaseReturnType>, replaceValue: (value: Partial<CoreValue>) => void) => any,
-	// 把pipeStart类型剔除，并修改pipeEnd的类型
+  CoreValue extends BasedValueType,
+  Config extends PipeValueConfigType,
+  BaseReturnType extends (...args: any) => any,
+  LastFunction extends (...args: any) => any
+  > = (
+  custom?: (value: CustomValueParamTypeAlias<BaseReturnType>, replaceValue: (value: Partial<CoreValue>) => void) => any,
+  // 把pipeStart类型剔除，并修改pipeEnd的类型
 ) => ProcessFuncTypeAlias<CoreValue, Config, LastFunction>;
 
-
 // 创建出来的value的类型
-export type PipeValueType<
-	CoreValue extends BasedValueType,
-	Config extends PipeValueConfigType,
-	LastFunction extends (...args: any) => any = () => BasedValueType
-	> = {
-	[key in keyof Config]: ProcessFuncType<CoreValue, Config, Config[key], LastFunction>;
+export type PipeValueType<CoreValue extends BasedValueType, Config extends PipeValueConfigType, LastFunction extends (...args: any) => any = () => BasedValueType> = {
+  [key in keyof Config]: ProcessFuncType<CoreValue, Config, Config[key], LastFunction>;
 };
 
 // 简写的配置项

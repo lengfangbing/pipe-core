@@ -14,6 +14,10 @@ CVS
 npm-debug.log
 src
 .babelrc
+.eslintignore
+.editorconfig
+.eslintrc.json
+package-lock.json
 rollup.*
 .idea
 node_modules
