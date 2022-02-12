@@ -19,11 +19,9 @@ export type PipeEndAliasType = {
 // pipe方法的简写类型
 export type PipeAliasType<
   CoreValue extends BasedValueType,
-  Config extends PipeConfigType<CoreValue>,
-  LastFunction extends (...args: any) => any = () => any,
-  ThisFunction extends (...args: any) => any = (val: ReturnTypeAlias<LastFunction>) => any
+  Config extends PipeConfigType<CoreValue>
   > = {
-  pipe<ValueType = any>(custom: (val: ValueType) => any): PipeAliasType<CoreValue, Config, ThisFunction> & ProcessConfigType<CoreValue, Config> & PipeEndAliasType;
+  pipe<ValueType = any>(custom: (val: ValueType, update: (val: Partial<CoreValue>) => void) => any): PipeAliasType<CoreValue, Config> & ProcessConfigType<CoreValue, Config> & PipeEndAliasType;
 };
 
 // 处理中Config变体的方法类型
@@ -34,7 +32,7 @@ export type ProcessConfigType<
   // 这里要改成Config的方法
   [key in keyof Config]: (
     custom: (val: ReturnTypeAlias<Config[key]>, update: (val: Partial<CoreValue>) => void) => any
-  ) => PipeEndAliasType & PipeAliasType<CoreValue, Config, typeof custom>;
+  ) => PipeEndAliasType & PipeAliasType<CoreValue, Config>;
 }
 
 // start方法的简写类型
