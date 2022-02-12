@@ -1,5 +1,5 @@
 /* eslint-disable no-useless-call */
-import { BasedValueType, PipeConfigWithCoreFunc, PipeValueConfigType, PipeValueType } from './types';
+import { BasedValueType, PipeConfigType, PipeEndAliasType, ProcessConfigType } from './types';
 
 class CoreValueFactory {
   // 理解为value的ref
@@ -50,44 +50,55 @@ function createCoreValue<Value extends BasedValueType = BasedValueType> (value: 
   return CoreValueFactory.createCoreValue(value);
 }
 
-function createPipeValue<CoreValue extends BasedValueType, Config extends PipeValueConfigType> (valueFactory: CoreValueFactory, config?: Config) {
-  // 添加默认的pipeStart和pipeEnd
-  const pipeValue = {
-    pipeStart (): PipeValueType<CoreValue, Config> {
-      valueFactory.initFuncArray();
-      return pipeValue;
-    },
-    async pipeEnd (): Promise<void> {
-      await valueFactory.execFuncArray();
-    }
-  } as unknown as PipeValueType<CoreValue, PipeConfigWithCoreFunc<CoreValue, Config>>;
-  // 空的时候返回空
-  if (!config) {
-    return pipeValue;
-  }
-  for (const name in config) {
-    const func = config[name];
-    pipeValue[name] = (customFunc => {
-      valueFactory.appendFunc(async () => {
-        // 执行config基本的数据操作方法
-        const tempValue = await func.call(null, valueFactory.getValue());
-        if (customFunc) {
-          await customFunc(tempValue, valueFactory.setValue.bind(valueFactory));
-        }
-      });
-      return pipeValue;
-    }) as PipeValueType<CoreValue, Config>[keyof Config];
-  }
-
-  return pipeValue;
+function createPipeEnd (coreValue: CoreValueFactory) {
+  const pipeEnd = async () => {
+    await coreValue.execFuncArray();
+  };
+  return {
+    pipeEnd
+  };
 }
 
-export default function createPipe<Value extends BasedValueType,
-  Config extends PipeValueConfigType<Value>> (
+// 待补充config的每一项方法的返回值。可以for...of遍历config后去修改每一项方法的返回的pipe方法，参数为config修改后的返回值
+function createPipe<Value extends BasedValueType,
+  Config extends PipeConfigType<Value>> (coreValue: CoreValueFactory, pipeFuncConfig: Config) {
+  // 创建pipe的逻辑代码, 直接补充pipeEnd方法
+  const res = {
+    ...createPipeEnd(coreValue)
+  } as Record<string, any>;
+  for (const [name, func] of Object.entries(pipeFuncConfig)) {
+    res[name] = (customFunction: (...args: any) => any) => {
+      // 定义config的实现方法
+      coreValue.appendFunc(async () => {
+        // config的方法的返回值
+        const returnValue = await func.call(null, coreValue.getValue() as Value);
+        // 实现转化后的config方法
+        await customFunction(returnValue, coreValue.setValue);
+      });
+    };
+  }
+  return res as ProcessConfigType<Value, Config> & PipeEndAliasType;
+}
+
+// 创建pipeStart的方法
+function createPipeStart<Value extends BasedValueType,
+  Config extends PipeConfigType<Value>> (coreValue: CoreValueFactory, pipeFuncConfig: Config) {
+  const pipeStart = () => {
+    // 重置执行数组
+    coreValue.initFuncArray();
+    return createPipe<Value, Config>(coreValue, pipeFuncConfig);
+  };
+  return {
+    pipeStart
+  };
+}
+
+export default function createPipeCore<Value extends BasedValueType,
+  Config extends PipeConfigType<Value>> (
   value: Value,
   pipeFuncConfig: Config
 ) {
   const coreValue = createCoreValue(value);
   // 把开始的value的pipeEnd剔除掉
-  return createPipeValue(coreValue, pipeFuncConfig as PipeConfigWithCoreFunc<Value, Config>) as Omit<PipeValueType<Value, PipeConfigWithCoreFunc<Value, Config>>, 'pipeEnd'>;
+  return createPipeStart<Value, Config>(coreValue, pipeFuncConfig);
 }
