@@ -1,42 +1,47 @@
+/* eslint-disable no-use-before-define */
 // 基本的value类型
 export type BasedValueType = Record<string, any>;
 
-// pipe的每一项方法类型, 这个方法只会将value处理一次后, 返回一个新的value, 这个value不会替换掉之前的value, 而是当做下一个方法的参数
-export type PipeFuncType<GetValue = any, ReturnValue = any> = (value: GetValue) => (ReturnValue | Promise<ReturnValue>);
+// 创建pipe的config的类型
+export type PipeConfigType<CoreValue = any> = Record<string, (val: CoreValue) => any>;
 
-// 创建pipe时的方法配置
-export type PipeValueConfigType<GetValue = any, ReturnValue = any> = Record<string, PipeFuncType<GetValue, ReturnValue>>;
-
+// 获取Promise方法的返回值
 type Await<T> = T extends PromiseLike<infer U> ? U : T;
 
-type PipeStartConfigType<Value extends BasedValueType, Config extends PipeValueConfigType> = {
-	pipeStart(): PipeValueType<Value, Config>;
+// 方法返回值的简写方法
+export type ReturnTypeAlias<Function extends (...args: any) => any> = Await<ReturnType<Function>>;
+
+// end方法的简写类型
+export type PipeEndAliasType = {
+  pipeEnd(): Promise<void>;
 };
 
-type PipeEndConfigType = {
-	pipeEnd(): Promise<void>;
+// pipe方法的简写类型
+export type PipeAliasType<
+  CoreValue extends BasedValueType,
+  Config extends PipeConfigType<CoreValue>
+  > = {
+  pipe<ValueType = any>(custom: (val: ValueType, update: (val: Partial<CoreValue>) => void) => any): PipeAliasType<CoreValue, Config> & ProcessConfigType<CoreValue, Config> & PipeEndAliasType;
 };
 
-// 处理后的方法的类型
-export type ProcessFuncType<
-	CoreValue extends BasedValueType,
-	Config extends PipeValueConfigType,
-	BaseReturnType extends (...args: any) => any,
-	LastFunction extends (...args: any) => any
-	> = (
-	custom?: (value: Await<ReturnType<BaseReturnType>>, replaceValue: (value: Partial<CoreValue>) => void) => any,
-	// 把pipeStart类型剔除，并修改pipeEnd的类型
-) => Omit<PipeValueType<CoreValue, Config, LastFunction>, 'pipeEnd' | 'pipeStart'> & PipeEndConfigType;
+// 处理中Config变体的方法类型
+export type ProcessConfigType<
+  CoreValue extends BasedValueType,
+  Config extends PipeConfigType<CoreValue>,
+  > = {
+  // 这里要改成Config的方法
+  [key in keyof Config]: (
+    custom: (val: ReturnTypeAlias<Config[key]>, update: (val: Partial<CoreValue>) => void) => any
+  ) => PipeEndAliasType & PipeAliasType<CoreValue, Config>;
+}
 
+// start方法的简写类型
+export type PipeStartAliasType<CoreValue extends BasedValueType, Config extends PipeConfigType<CoreValue>> = {
+  pipeStart(): ProcessConfigType<CoreValue, Config> & PipeEndAliasType;
+}
 
-// 创建出来的value的类型
+// 创建出来的类型
 export type PipeValueType<
-	CoreValue extends BasedValueType,
-	Config extends PipeValueConfigType,
-	LastFunction extends (...args: any) => any = () => BasedValueType
-	> = {
-	[key in keyof Config]: ProcessFuncType<CoreValue, Config, Config[key], LastFunction>;
-};
-
-// 简写的配置项
-export type PipeConfigWithCoreFunc<Value extends BasedValueType, Config extends PipeValueConfigType> = Config & PipeStartConfigType<Value, Config> & PipeEndConfigType;
+  CoreValue extends BasedValueType,
+  Config extends PipeConfigType<CoreValue>
+  > = PipeStartAliasType<CoreValue, Config>;
