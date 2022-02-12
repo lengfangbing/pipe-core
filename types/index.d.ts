@@ -1,21 +1,19 @@
 declare type BasedValueType = Record<string, any>;
-declare type PipeFuncType<GetValue = any, ReturnValue = any> = (value: GetValue) => (ReturnValue | Promise<ReturnValue>);
-declare type PipeValueConfigType<GetValue = any, ReturnValue = any> = Record<string, PipeFuncType<GetValue, ReturnValue>>;
+declare type PipeConfigType<CoreValue = any> = Record<string, (val: CoreValue) => any>;
 declare type Await<T> = T extends PromiseLike<infer U> ? U : T;
-declare type PipeStartConfigType<Value extends BasedValueType, Config extends PipeValueConfigType> = {
-    pipeStart(): PipeValueType<Value, Config>;
-};
-declare type PipeEndConfigType = {
+declare type ReturnTypeAlias<Function extends (...args: any) => any> = Await<ReturnType<Function>>;
+declare type PipeEndAliasType = {
     pipeEnd(): Promise<void>;
 };
-declare type CustomValueParamTypeAlias<BaseReturnType extends (...args: any) => any> = Await<ReturnType<BaseReturnType>>;
-declare type ProcessFuncTypeAlias<CoreValue extends BasedValueType, Config extends PipeValueConfigType, LastFunction extends (...args: any) => any> = Omit<PipeValueType<CoreValue, Config, LastFunction>, 'pipeEnd' | 'pipeStart'> & PipeEndConfigType;
-declare type ProcessFuncType<CoreValue extends BasedValueType, Config extends PipeValueConfigType, BaseReturnType extends (...args: any) => any, LastFunction extends (...args: any) => any> = (custom?: (value: CustomValueParamTypeAlias<BaseReturnType>, replaceValue: (value: Partial<CoreValue>) => void) => any) => ProcessFuncTypeAlias<CoreValue, Config, LastFunction>;
-declare type PipeValueType<CoreValue extends BasedValueType, Config extends PipeValueConfigType, LastFunction extends (...args: any) => any = () => BasedValueType> = {
-    [key in keyof Config]: ProcessFuncType<CoreValue, Config, Config[key], LastFunction>;
+declare type PipeAliasType<CoreValue extends BasedValueType, Config extends PipeConfigType<CoreValue>> = {
+    pipe<ValueType = any>(custom: (val: ValueType, update: (val: Partial<CoreValue>) => void) => any): PipeAliasType<CoreValue, Config> & ProcessConfigType<CoreValue, Config> & PipeEndAliasType;
 };
-declare type PipeConfigWithCoreFunc<Value extends BasedValueType, Config extends PipeValueConfigType> = Config & PipeStartConfigType<Value, Config> & PipeEndConfigType;
+declare type ProcessConfigType<CoreValue extends BasedValueType, Config extends PipeConfigType<CoreValue>> = {
+    [key in keyof Config]: (custom: (val: ReturnTypeAlias<Config[key]>, update: (val: Partial<CoreValue>) => void) => any) => PipeEndAliasType & PipeAliasType<CoreValue, Config>;
+};
 
-declare function createPipe<Value extends BasedValueType, Config extends PipeValueConfigType<Value>>(value: Value, pipeFuncConfig: Config): Omit<PipeValueType<Value, PipeConfigWithCoreFunc<Value, Config>, () => BasedValueType>, "pipeEnd">;
+declare function createPipeCore<Value extends BasedValueType, Config extends PipeConfigType<Value>>(value: Value, pipeFuncConfig: Config): {
+    pipeStart: () => ProcessConfigType<Value, Config> & PipeEndAliasType;
+};
 
-export { createPipe as default };
+export { createPipeCore as default };
