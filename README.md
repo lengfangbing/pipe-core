@@ -24,19 +24,19 @@ value
   .getAge(age => {
     console.log(`first age is ${age}`);
     return age + 1;
-  }))
-.pipe<number>((age, update) => {
-  console.log(`changed age is ${age}}`);
-  update({ age: 99 });
-})
+  })
+  .pipe<number>((age, update) => {
+    console.log(`changed age is ${age}}`);
+    update({ age: 99 });
+  })
   .getName(name => {
     console.log(`first name is ${name}`);
     return { newName: name + Date.now() };
-  }))
-.pipe<{ newName: string }>((name, update) => {
-  console.log(`changed name is ${name.newName}`);
-  update('pipe-crow');
-})
+  })
+  .pipe<{ newName: string }>((name, update) => {
+    console.log(`changed name is ${name.newName}`);
+    update('pipe-crow');
+  })
   .getValue(value => console.log(`changed value is ${value}`))
   .pipeEnd()
   .then()
