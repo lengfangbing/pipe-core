@@ -1,10 +1,5 @@
-# pipe-core
-## What is pipe-core?
->process data like a pipeline
-## How to use?
->the test case code
-```typescript
-import { createPipeCore } from '@bell-crow/pipe-core';
+/* eslint-disable no-undef */
+import { createPipeCore } from '../index';
 
 const _value = {
   name: 'pipe-core',
@@ -106,58 +101,3 @@ test('test createPipeCore case', async () => {
       });
     });
 });
-
-```
-
-## Have any explain about the usage?
-> `createPipe` is a function to create one 'pipe' value. The `pipeStart` is the pipe start and the `pipeEnd` is the pipe end.
-> ```typescript
-> await value
->   .pipeStart()
->   /* some process */
->   .pipeEnd();
-> ```
-> The first parameter is the value. The second parameter is one piece of the pipe to process this value.
-> ```typescript
-> createPipe({
->   name: 'crow',
->   age: 3
-> }, {
->   getValue(value) {
->     return { ...value }
->   },
->   getName(value) {
->     return value.name;
->   },
->   getAge(value) {
->     return value.age;
->   }
-> });
-> ```
-> The created pipe is one `pipeline`. We can do some process based on one piece of the pipe called `process function`.
-> Every `process function` could provide two parameters. The first is the `real-time value`. The second is one function can `update the value`.
-> The `process function` could provide a function called `pipe`. It would receive the return value of the `process function`. And the first `pipe`'s return value would be the parameter of the secord `pipe` function. The `pipe` also supports function to update value.
-> ```typescript
-> await value
->   .pipeStart() // start the pipe
->   .getValue(value => {
->       console.log(`value is ${JSON.stringify(value)}`);
->       return value.name;
->   })
->   .pipe<string>(name => console.log(`value.name is ${name}`))
->   .getValue((_, update) => {
->       // update the value, the update is synchronous
->       const value = { name: 'bell-crow', age: 1 };
->       update(value as typeof _);
->       console.log(`change value: ${JSON.stringify(value)}`);
->   })
->   .getValue(value => console.log(`changed value is ${JSON.stringify(value)}`))
->   .pipeEnd()
-> ```
-
-
-## TODO
-
-* [x] one process can mix multiple piece of the pipe function
-* [x] append piece of the pipe function dynamic
-* [ ] more type auto support
