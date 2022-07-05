@@ -1,5 +1,5 @@
 /* eslint-disable no-undef */
-import { createPipeCore } from '../temp/core';
+import { createPipeCore } from '../index';
 
 const _value = {
   name: 'pipe-core',
