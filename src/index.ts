@@ -1,5 +1,6 @@
 import { PipeValueFactory } from './factory';
 import { CustomStartFunction, CustomStartFunctionValue, PipeCore, PipeEnd, PipeFunction } from './types';
+export * from './types';
 
 // 创建传入的start方法
 function createCustomStartFunction<Value extends object, CustomStart extends CustomStartFunctionValue<Value>> (

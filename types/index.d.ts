@@ -16,4 +16,4 @@ declare type PipeCore<Value, Config extends CustomStartFunctionValue<Value>> = C
 
 declare function createPipeCore<Value extends object, CustomStart extends CustomStartFunctionValue<Value>>(value: Value, config?: CustomStart): PipeCore<Value, CustomStart>;
 
-export { createPipeCore };
+export { CustomStartFunction, CustomStartFunctionValue, PipeCore, PipeEnd, PipeFunction, ReturnTypeAlias, createPipeCore };
