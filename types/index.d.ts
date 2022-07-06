@@ -10,12 +10,9 @@ declare type PipeFunction<Value, Config extends CustomStartFunctionValue<Value>>
 declare type CustomStartFunction<Value, Config extends CustomStartFunctionValue<Value>> = {
     [key in keyof Config]: (custom: (val: ReturnTypeAlias<Config[key]>, update: (val: Partial<Value>) => Promise<void> | void) => any) => {
         pipe: PipeFunction<Value, Config>;
-    } & PipeEnd<Value>;
+    } & CustomStartFunction<Value, Config> & PipeEnd<Value>;
 };
-declare type PipeStart<Value, Config extends CustomStartFunctionValue<Value>> = {
-    pipeStart: () => CustomStartFunction<Value, Config>;
-};
-declare type PipeCore<Value, Config extends CustomStartFunctionValue<Value>> = PipeStart<Value, Config>;
+declare type PipeCore<Value, Config extends CustomStartFunctionValue<Value>> = CustomStartFunction<Value, Config>;
 
 declare function createPipeCore<Value extends object, CustomStart extends CustomStartFunctionValue<Value>>(value: Value, config?: CustomStart): PipeCore<Value, CustomStart>;
 

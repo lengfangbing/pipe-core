@@ -37,13 +37,18 @@ const valueCore = createPipeCore(_value, customStartFunction);
 
 test('test createPipeCore case', async () => {
   await valueCore
-    .pipeStart()
     .getDoubleAge(doubleAge => {
       expect(doubleAge).toBe(2);
       return doubleAge / 2;
     })
     .pipe<number>(divideAge => {
       expect(divideAge).toBe(1);
+    })
+    .getDoubleAge(doubleAge => {
+      expect(doubleAge).toBe(2);
+    })
+    .getName(name => {
+      expect(name).toBe('pipe-core');
     })
     .getName(name => {
       expect(name).toBe('pipe-core');

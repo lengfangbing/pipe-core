@@ -23,11 +23,7 @@ export type CustomStartFunction<Value, Config extends CustomStartFunctionValue<V
     custom: (val: ReturnTypeAlias<Config[key]>, update: (val: Partial<Value>) => Promise<void> | void) => any,
   ) => {
          pipe: PipeFunction<Value, Config>;
-       } & PipeEnd<Value>
+       } & CustomStartFunction<Value, Config> & PipeEnd<Value>
 }
 
-export type PipeStart<Value, Config extends CustomStartFunctionValue<Value>> = {
-  pipeStart: () => CustomStartFunction<Value, Config>;
-};
-
-export type PipeCore<Value, Config extends CustomStartFunctionValue<Value>> = PipeStart<Value, Config>;
+export type PipeCore<Value, Config extends CustomStartFunctionValue<Value>> = CustomStartFunction<Value, Config>;
