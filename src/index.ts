@@ -1,5 +1,6 @@
 import { PipeValueFactory } from './factory';
-import { CustomStartFunction, CustomStartFunctionValue, PipeCore, PipeEnd, PipeFunction, PipeStart } from './types';
+import { CustomStartFunction, CustomStartFunctionValue, PipeCore, PipeEnd, PipeFunction } from './types';
+export * from './types';
 
 // 创建传入的start方法
 function createCustomStartFunction<Value extends object, CustomStart extends CustomStartFunctionValue<Value>> (
@@ -70,25 +71,10 @@ function createPipeEnd<Value extends object> (
     async pipeEnd () {
       // 顺序执行方法
       await valueFactory.execFunction();
+      // 清空方法
+      valueFactory.clearExec();
       // 返回最后的value值
       return Promise.resolve(valueFactory.getValue());
-    }
-  };
-}
-
-// 创建pipeStart的方法
-function createPipeStart<Value extends object, CustomStart extends CustomStartFunctionValue<Value>> (
-  valueFactory: PipeValueFactory<Value>,
-  config: CustomStart
-): PipeStart<Value, CustomStart> {
-  return {
-    pipeStart () {
-      // 清空执行的方法列表
-      valueFactory.clearExec();
-      return {
-        ...createPipeEnd(valueFactory),
-        ...createCustomStartFunction(valueFactory, config)
-      };
     }
   };
 }
@@ -98,5 +84,5 @@ export function createPipeCore<Value extends object, CustomStart extends CustomS
   config = {} as CustomStart
 ): PipeCore<Value, CustomStart> {
   const _value = PipeValueFactory.createPipeValue(value);
-  return createPipeStart(_value, config);
+  return createCustomStartFunction(_value, config);
 }
