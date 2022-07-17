@@ -1,11 +1,20 @@
 import { PipeValueFactory } from './factory';
 import { CustomStartFunction, CustomStartFunctionValue, PipeCore, PipeEnd, PipeFunction } from './types';
+
 export * from './types';
+
+/**
+ * @TODO 增加对调用其他pipe管道的方法实现，新的数据结构设计完成，只需要将调用其他管道方法append到list中即可
+ */
 
 // 创建传入的start方法
 function createCustomStartFunction<Value extends object, CustomStart extends CustomStartFunctionValue<Value>> (
   valueFactory: PipeValueFactory<Value>,
-  config: CustomStart
+  {
+    config
+  }: {
+    config: CustomStart
+  }
 ): CustomStartFunction<Value, CustomStart> {
   // 对customStart方法的转换
   const formattedCustomStart = {} as CustomStartFunction<Value, CustomStart>;
@@ -18,15 +27,20 @@ function createCustomStartFunction<Value extends object, CustomStart extends Cus
         const returnValue = await value(valueFactory.getValue());
         // 执行传入的custom方法
         // 拿到返回值的实现 并保存起来，暂定实现为单独定义改customFunction然后
-        const tempReturnValue = await custom(returnValue);
+        const tempReturnValue = await custom(returnValue, valueFactory.setValue.bind(valueFactory));
         // 将{customFunction: customReturnValue}存到Map中，把customFunction传到下一级中用Map取值
         valueFactory.saveReturnValue(customFunction, tempReturnValue);
       };
-      valueFactory.appendExecFunction(customFunction);
+      valueFactory.appendAction({
+        value: customFunction
+      });
       return {
         ...createPipeEnd(valueFactory),
-        ...createCustomStartFunction(valueFactory, config),
-        ...createPipe(valueFactory, config, customFunction)
+        ...createCustomStartFunction(valueFactory, { config }),
+        ...createPipe(valueFactory, {
+          config,
+          customFunctionInMap: customFunction
+        })
       };
     };
   }
@@ -37,8 +51,13 @@ function createCustomStartFunction<Value extends object, CustomStart extends Cus
 // 创建pipe方法
 function createPipe<Value extends object, CustomStart extends CustomStartFunctionValue<Value>> (
   valueFactory: PipeValueFactory<Value>,
-  config: CustomStart,
-  customFunctionInMap: (...args: any) => any
+  {
+    config,
+    customFunctionInMap
+  }: {
+    config: CustomStart;
+    customFunctionInMap: (...args: any) => any;
+  }
 ): { pipe: PipeFunction<Value, CustomStart>; } {
   return {
     pipe (custom: (...args: any) => any) {
@@ -51,15 +70,20 @@ function createPipe<Value extends object, CustomStart extends CustomStartFunctio
         // 将{customFunction: customReturnValue}存到Map中，把customFunction传到下一级中用Map取值
         valueFactory.saveReturnValue(customFunction, tempReturnValue);
       };
-      valueFactory.appendExecFunction(customFunction);
+      valueFactory.appendAction({
+        value: customFunction
+      });
       return {
-        ...createPipe(valueFactory, config, customFunction),
+        ...createPipe(valueFactory, {
+          config,
+          customFunctionInMap: customFunction
+        }),
         ...createPipeEnd(valueFactory),
-        ...createCustomStartFunction(valueFactory, config)
+        ...createCustomStartFunction(valueFactory, { config })
       };
     },
     ...createPipeEnd(valueFactory),
-    ...createCustomStartFunction(valueFactory, config)
+    ...createCustomStartFunction(valueFactory, { config })
   };
 }
 
@@ -70,9 +94,9 @@ function createPipeEnd<Value extends object> (
   return {
     async pipeEnd () {
       // 顺序执行方法
-      await valueFactory.execFunction();
+      await valueFactory.callActionListValue();
       // 清空方法
-      valueFactory.clearExec();
+      valueFactory.clearActionList();
       // 返回最后的value值
       return Promise.resolve(valueFactory.getValue());
     }
@@ -84,5 +108,5 @@ export function createPipeCore<Value extends object, CustomStart extends CustomS
   config = {} as CustomStart
 ): PipeCore<Value, CustomStart> {
   const _value = PipeValueFactory.createPipeValue(value);
-  return createCustomStartFunction(_value, config);
+  return createCustomStartFunction(_value, { config });
 }
