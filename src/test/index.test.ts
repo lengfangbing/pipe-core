@@ -67,6 +67,61 @@ test('test async process', async () => {
     .pipeEnd();
 });
 
+test('test setValue process', async () => {
+  const valueCore = createPipeCore(_value, customStartFunction);
+  let a = 0;
+  await valueCore
+    .getName(async name => {
+      a++;
+      await sleep();
+      return `changed ${name}`;
+    })
+    .pipe<string>(name => {
+      expect(a).toBe(1);
+      a++;
+      expect(name).toBe('changed pipe-core');
+    })
+    .getValue((value, set) => {
+      expect(a).toBe(2);
+      const { location, ...val } = value;
+      expect(val).toEqual({
+        name: 'pipe-core',
+        age: 1,
+        nick: {
+          pipe: 1,
+          core: 2
+        },
+        city: [1, 2, 3]
+      });
+      set({ age: 100, name: 'set age' });
+    })
+    .pipeEnd();
+
+  await valueCore
+    .getName(name => {
+      expect(name).toBe('set age');
+    })
+    .getDoubleAge(age => {
+      expect(age).toBe(200);
+    })
+    .pipe((_, set) => {
+      set({ age: 1 });
+    })
+    .pipeEnd()
+    .then(value => {
+      const { location, ...val } = value;
+      expect(val).toEqual({
+        name: 'set age',
+        age: 1,
+        nick: {
+          pipe: 1,
+          core: 2
+        },
+        city: [1, 2, 3]
+      });
+    });
+});
+
 test('test createPipeCore case', async () => {
   const valueCore = createPipeCore(_value, customStartFunction);
 
