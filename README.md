@@ -1,4 +1,9 @@
 # pipe-core
+
+[![tag](https://img.shields.io/github/tag/lengfangbing/pipe-core.svg)](https://github.com/lengfangbing/min)
+[![license](https://img.shields.io/github/license/lengfangbing/pipe-core.svg)](https://github.com/lengfangbing/min)
+[![npm version](https://img.shields.io/npm/v/@bell-crow/pipe-core.svg?style=flat)](https://www.npmjs.com/package/@bell-crow/pipe-core)
+
 ## What is pipe-core?
 >process data like a pipeline
 ## How to use?
