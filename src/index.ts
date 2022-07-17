@@ -3,6 +3,10 @@ import { CustomStartFunction, CustomStartFunctionValue, PipeCore, PipeEnd, PipeF
 
 export * from './types';
 
+/**
+ * @TODO 增加对调用其他pipe管道的方法实现，新的数据结构设计完成，只需要将调用其他管道方法append到list中即可
+ */
+
 // 创建传入的start方法
 function createCustomStartFunction<Value extends object, CustomStart extends CustomStartFunctionValue<Value>> (
   valueFactory: PipeValueFactory<Value>,
