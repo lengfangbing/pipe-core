@@ -18,7 +18,7 @@ function createCustomStartFunction<Value extends object, CustomStart extends Cus
         const returnValue = await value(valueFactory.getValue());
         // 执行传入的custom方法
         // 拿到返回值的实现 并保存起来，暂定实现为单独定义改customFunction然后
-        const tempReturnValue = await custom(returnValue);
+        const tempReturnValue = await custom(returnValue, valueFactory.setValue.bind(valueFactory));
         // 将{customFunction: customReturnValue}存到Map中，把customFunction传到下一级中用Map取值
         valueFactory.saveReturnValue(customFunction, tempReturnValue);
       };
