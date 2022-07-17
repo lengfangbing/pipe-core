@@ -27,7 +27,9 @@ function createCustomStartFunction<Value extends object, CustomStart extends Cus
         // 将{customFunction: customReturnValue}存到Map中，把customFunction传到下一级中用Map取值
         valueFactory.saveReturnValue(customFunction, tempReturnValue);
       };
-      valueFactory.appendExecFunction(customFunction);
+      valueFactory.appendAction({
+        value: customFunction
+      });
       return {
         ...createPipeEnd(valueFactory),
         ...createCustomStartFunction(valueFactory, { config }),
@@ -64,7 +66,9 @@ function createPipe<Value extends object, CustomStart extends CustomStartFunctio
         // 将{customFunction: customReturnValue}存到Map中，把customFunction传到下一级中用Map取值
         valueFactory.saveReturnValue(customFunction, tempReturnValue);
       };
-      valueFactory.appendExecFunction(customFunction);
+      valueFactory.appendAction({
+        value: customFunction
+      });
       return {
         ...createPipe(valueFactory, {
           config,
@@ -86,9 +90,9 @@ function createPipeEnd<Value extends object> (
   return {
     async pipeEnd () {
       // 顺序执行方法
-      await valueFactory.execFunction();
+      await valueFactory.callActionListValue();
       // 清空方法
-      valueFactory.clearExec();
+      valueFactory.clearActionList();
       // 返回最后的value值
       return Promise.resolve(valueFactory.getValue());
     }

@@ -3,6 +3,12 @@ type Await<T> = T extends PromiseLike<infer U> ? U : T;
 // 方法返回值的简写方法
 export type ReturnTypeAlias<Function extends (...args: any) => any> = Await<ReturnType<Function>>;
 
+// valueFactory的action
+export type Action = {
+  value: () => void | Promise<void>;
+  list?: Array<Action>;
+};
+
 export type PipeEnd<Value> = {
   pipeEnd: () => Promise<Value>;
 };

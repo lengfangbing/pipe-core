@@ -1,5 +1,9 @@
 declare type Await<T> = T extends PromiseLike<infer U> ? U : T;
 declare type ReturnTypeAlias<Function extends (...args: any) => any> = Await<ReturnType<Function>>;
+declare type Action = {
+    value: () => void | Promise<void>;
+    list?: Array<Action>;
+};
 declare type PipeEnd<Value> = {
     pipeEnd: () => Promise<Value>;
 };
@@ -16,4 +20,4 @@ declare type PipeCore<Value, Config extends CustomStartFunctionValue<Value>> = C
 
 declare function createPipeCore<Value extends object, CustomStart extends CustomStartFunctionValue<Value>>(value: Value, config?: CustomStart): PipeCore<Value, CustomStart>;
 
-export { CustomStartFunction, CustomStartFunctionValue, PipeCore, PipeEnd, PipeFunction, ReturnTypeAlias, createPipeCore };
+export { Action, CustomStartFunction, CustomStartFunctionValue, PipeCore, PipeEnd, PipeFunction, ReturnTypeAlias, createPipeCore };
