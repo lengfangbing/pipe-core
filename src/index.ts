@@ -1,11 +1,16 @@
 import { PipeValueFactory } from './factory';
 import { CustomStartFunction, CustomStartFunctionValue, PipeCore, PipeEnd, PipeFunction } from './types';
+
 export * from './types';
 
 // 创建传入的start方法
 function createCustomStartFunction<Value extends object, CustomStart extends CustomStartFunctionValue<Value>> (
   valueFactory: PipeValueFactory<Value>,
-  config: CustomStart
+  {
+    config
+  }: {
+    config: CustomStart
+  }
 ): CustomStartFunction<Value, CustomStart> {
   // 对customStart方法的转换
   const formattedCustomStart = {} as CustomStartFunction<Value, CustomStart>;
@@ -25,8 +30,11 @@ function createCustomStartFunction<Value extends object, CustomStart extends Cus
       valueFactory.appendExecFunction(customFunction);
       return {
         ...createPipeEnd(valueFactory),
-        ...createCustomStartFunction(valueFactory, config),
-        ...createPipe(valueFactory, config, customFunction)
+        ...createCustomStartFunction(valueFactory, { config }),
+        ...createPipe(valueFactory, {
+          config,
+          customFunctionInMap: customFunction
+        })
       };
     };
   }
@@ -37,8 +45,13 @@ function createCustomStartFunction<Value extends object, CustomStart extends Cus
 // 创建pipe方法
 function createPipe<Value extends object, CustomStart extends CustomStartFunctionValue<Value>> (
   valueFactory: PipeValueFactory<Value>,
-  config: CustomStart,
-  customFunctionInMap: (...args: any) => any
+  {
+    config,
+    customFunctionInMap
+  }: {
+    config: CustomStart;
+    customFunctionInMap: (...args: any) => any;
+  }
 ): { pipe: PipeFunction<Value, CustomStart>; } {
   return {
     pipe (custom: (...args: any) => any) {
@@ -53,13 +66,16 @@ function createPipe<Value extends object, CustomStart extends CustomStartFunctio
       };
       valueFactory.appendExecFunction(customFunction);
       return {
-        ...createPipe(valueFactory, config, customFunction),
+        ...createPipe(valueFactory, {
+          config,
+          customFunctionInMap: customFunction
+        }),
         ...createPipeEnd(valueFactory),
-        ...createCustomStartFunction(valueFactory, config)
+        ...createCustomStartFunction(valueFactory, { config })
       };
     },
     ...createPipeEnd(valueFactory),
-    ...createCustomStartFunction(valueFactory, config)
+    ...createCustomStartFunction(valueFactory, { config })
   };
 }
 
@@ -84,5 +100,5 @@ export function createPipeCore<Value extends object, CustomStart extends CustomS
   config = {} as CustomStart
 ): PipeCore<Value, CustomStart> {
   const _value = PipeValueFactory.createPipeValue(value);
-  return createCustomStartFunction(_value, config);
+  return createCustomStartFunction(_value, { config });
 }
