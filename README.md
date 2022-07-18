@@ -1,7 +1,7 @@
 # pipe-core
 
-[![tag](https://img.shields.io/github/tag/lengfangbing/pipe-core.svg)](https://github.com/lengfangbing/min)
-[![license](https://img.shields.io/github/license/lengfangbing/pipe-core.svg)](https://github.com/lengfangbing/min)
+[![tag](https://img.shields.io/github/tag/lengfangbing/pipe-core.svg)](https://github.com/lengfangbing/pipe-core)
+[![license](https://img.shields.io/github/license/lengfangbing/pipe-core.svg)](https://github.com/lengfangbing/pipe-core)
 [![npm version](https://img.shields.io/npm/v/@bell-crow/pipe-core.svg?style=flat)](https://www.npmjs.com/package/@bell-crow/pipe-core)
 [![Build Status](https://app.travis-ci.com/lengfangbing/pipe-core.svg?branch=main)](https://app.travis-ci.com/lengfangbing/pipe-core)
 [![Coverage Status](https://coveralls.io/repos/github/lengfangbing/pipe-core/badge.svg)](https://coveralls.io/github/lengfangbing/pipe-core)
