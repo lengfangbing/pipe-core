@@ -1,4 +1,4 @@
-import { Action, CustomStartFunctionValue } from './types';
+import { Action, CustomStartConfig } from './types';
 
 export class PipeValueFactory<Value extends Record<string, any>> {
   // value source
@@ -8,9 +8,9 @@ export class PipeValueFactory<Value extends Record<string, any>> {
   // 保存方法返回值的Map
   returnValueMap: Map<(...args: any) => any, any> = new Map();
   // extend functions
-  private extendFunctions: Array<CustomStartFunctionValue<Value>[string]> = [];
+  private extendFunctions: Array<CustomStartConfig<Value>[string]> = [];
   // just for temp once extend functions
-  private extendOnceFunctions: Array<CustomStartFunctionValue<Value>[string]> = [];
+  private extendOnceFunctions: Array<CustomStartConfig<Value>[string]> = [];
 
   constructor (value: Value) {
     this.value = value;

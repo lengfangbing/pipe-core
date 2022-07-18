@@ -1,5 +1,12 @@
 import { PipeValueFactory } from './factory';
-import { CustomStartFunction, CustomStartFunctionValue, PipeCore, PipeEnd, PipeFunction } from './types';
+import {
+  CustomStartConfigFunctions,
+  CustomStartConfig,
+  PipeCore,
+  PipeEnd,
+  PipeFunction,
+  CustomFunction
+} from './types';
 
 export * from './types';
 
@@ -8,19 +15,21 @@ export * from './types';
  */
 
 // 创建传入的start方法
-function createCustomStartFunction<Value extends object, CustomStart extends CustomStartFunctionValue<Value>> (
+function createCustomStartFunction<Value extends object, CustomStart extends CustomStartConfig<Value>> (
   valueFactory: PipeValueFactory<Value>,
   {
     config
   }: {
     config: CustomStart
   }
-): CustomStartFunction<Value, CustomStart> {
+): CustomStartConfigFunctions<Value, CustomStart> {
   // 对customStart方法的转换
-  const formattedCustomStart = {} as CustomStartFunction<Value, CustomStart>;
+  const formattedCustomStart = {} as CustomStartConfigFunctions<Value, CustomStart>;
   // 遍历config对象，定义新的方法
   for (const [key, value] of Object.entries(config)) {
-    formattedCustomStart[key as keyof CustomStartFunction<Value, CustomStart>] = (custom: (...args: any) => any) => {
+    formattedCustomStart[key as keyof CustomStartConfigFunctions<Value, CustomStart>] = (
+      custom: CustomFunction<Value, CustomStart>
+    ) => {
       // 把执行方法添加到execFunction中
       const customFunction = async () => {
         // 获取到value方法的返回值，要当做新的方法的参数执行
@@ -49,7 +58,7 @@ function createCustomStartFunction<Value extends object, CustomStart extends Cus
 }
 
 // 创建pipe方法
-function createPipe<Value extends object, CustomStart extends CustomStartFunctionValue<Value>> (
+function createPipe<Value extends object, CustomStart extends CustomStartConfig<Value>> (
   valueFactory: PipeValueFactory<Value>,
   {
     config,
@@ -60,7 +69,7 @@ function createPipe<Value extends object, CustomStart extends CustomStartFunctio
   }
 ): { pipe: PipeFunction<Value, CustomStart>; } {
   return {
-    pipe (custom: (...args: any) => any) {
+    pipe (custom: CustomFunction<Value, CustomStart>) {
       const customFunction = async () => {
         // 拿到返回值
         const returnValue = valueFactory.getReturnValue(customFunctionInMap);
@@ -103,7 +112,7 @@ function createPipeEnd<Value extends object> (
   };
 }
 
-export function createPipeCore<Value extends object, CustomStart extends CustomStartFunctionValue<Value>> (
+export function createPipeCore<Value extends object, CustomStart extends CustomStartConfig<Value>> (
   value: Value,
   config = {} as CustomStart
 ): PipeCore<Value, CustomStart> {
