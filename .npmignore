@@ -23,3 +23,7 @@ rollup.*
 node_modules
 tsconfig.json
 rollup.config.js
+.travis.yml
+coverage
+test
+jest.config.js
