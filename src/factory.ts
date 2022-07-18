@@ -31,9 +31,26 @@ export class PipeValueFactory<Value extends Record<string, any>> {
     this.actionList = [];
   }
 
+  private findActionValueForEachList (
+    actionValue: Action['value'],
+    list: Array<Action>
+  ): Action | void {
+    for (const action of list) {
+      if (actionValue === action.value) {
+        return action;
+      }
+      if (action.list && action.list.length > 0) {
+        const loopAction = this.findActionValueForEachList(actionValue, action.list);
+        if (loopAction) {
+          return loopAction;
+        }
+      }
+    }
+  }
+
   // 在Action的list中添加一项Action
   appendActionItemByActionValue (action: Action, actionValue: Action['value']) {
-    const findActionValue = this.actionList.find(item => item.value === actionValue);
+    const findActionValue = this.findActionValueForEachList(actionValue, this.actionList);
     if (findActionValue) {
       const newList = findActionValue.list || [];
       newList.push(action);
