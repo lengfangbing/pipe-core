@@ -1,5 +1,5 @@
 TN:
-SF:src\factory.ts
+SF:src/factory.ts
 FN:3,(anonymous_15)
 FN:15,PipeValueFactory
 FN:19,(anonymous_17)
@@ -78,7 +78,7 @@ BRF:8
 BRH:3
 end_of_record
 TN:
-SF:src\index.ts
+SF:src/index.ts
 FN:11,createCustomStartFunction
 FN:23,(anonymous_21)
 FN:25,(anonymous_22)
