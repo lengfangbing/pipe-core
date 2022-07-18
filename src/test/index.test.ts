@@ -122,6 +122,25 @@ test('test setValue process', async () => {
     });
 });
 
+test('test empty value core', async () => {
+  const valueCore = createPipeCore(_value);
+
+  await valueCore
+    .pipeEnd()
+    .then(value => {
+      const { location, ...val } = value;
+      expect(val).toEqual({
+        name: 'pipe-core',
+        age: 1,
+        nick: {
+          pipe: 1,
+          core: 2
+        },
+        city: [1, 2, 3]
+      });
+    });
+});
+
 test('test createPipeCore case', async () => {
   const valueCore = createPipeCore(_value, customStartFunction);
 

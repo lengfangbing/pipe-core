@@ -5,7 +5,9 @@ import {
   PipeCore,
   PipeEnd,
   PipeFunction,
-  CustomFunction
+  CustomFunction,
+  Action,
+  PipeCoreConfig
 } from './types';
 
 export * from './types';
@@ -15,14 +17,14 @@ export * from './types';
  */
 
 // 创建传入的start方法
-function createCustomStartFunction<Value extends object, CustomStart extends CustomStartConfig<Value>> (
+function createPipeCoreConfig<Value extends object, CustomStart extends CustomStartConfig<Value>> (
   valueFactory: PipeValueFactory<Value>,
   {
     config
   }: {
     config: CustomStart
   }
-): CustomStartConfigFunctions<Value, CustomStart> {
+): PipeCoreConfig<Value, CustomStart> {
   // 对customStart方法的转换
   const formattedCustomStart = {} as CustomStartConfigFunctions<Value, CustomStart>;
   // 遍历config对象，定义新的方法
@@ -40,12 +42,14 @@ function createCustomStartFunction<Value extends object, CustomStart extends Cus
         // 将{customFunction: customReturnValue}存到Map中，把customFunction传到下一级中用Map取值
         valueFactory.saveReturnValue(customFunction, tempReturnValue);
       };
-      valueFactory.appendAction({
-        value: customFunction
-      });
+
+      // 定义一个action，如果是自身管道调用，不需要定义list
+      const action: Action = { value: customFunction };
+      valueFactory.appendAction(action);
+
       return {
         ...createPipeEnd(valueFactory),
-        ...createCustomStartFunction(valueFactory, { config }),
+        ...createPipeCoreConfig(valueFactory, { config }),
         ...createPipe(valueFactory, {
           config,
           customFunctionInMap: customFunction
@@ -54,7 +58,10 @@ function createCustomStartFunction<Value extends object, CustomStart extends Cus
     };
   }
 
-  return formattedCustomStart;
+  return {
+    ...formattedCustomStart,
+    ...createPipeEnd(valueFactory)
+  };
 }
 
 // 创建pipe方法
@@ -79,20 +86,22 @@ function createPipe<Value extends object, CustomStart extends CustomStartConfig<
         // 将{customFunction: customReturnValue}存到Map中，把customFunction传到下一级中用Map取值
         valueFactory.saveReturnValue(customFunction, tempReturnValue);
       };
-      valueFactory.appendAction({
-        value: customFunction
-      });
+
+      // 定义一个action，如果是自身管道调用，不需要定义list
+      const action: Action = { value: customFunction };
+      valueFactory.appendAction(action);
+
       return {
         ...createPipe(valueFactory, {
           config,
           customFunctionInMap: customFunction
         }),
         ...createPipeEnd(valueFactory),
-        ...createCustomStartFunction(valueFactory, { config })
+        ...createPipeCoreConfig(valueFactory, { config })
       };
     },
     ...createPipeEnd(valueFactory),
-    ...createCustomStartFunction(valueFactory, { config })
+    ...createPipeCoreConfig(valueFactory, { config })
   };
 }
 
@@ -117,5 +126,5 @@ export function createPipeCore<Value extends object, CustomStart extends CustomS
   config = {} as CustomStart
 ): PipeCore<Value, CustomStart> {
   const _value = PipeValueFactory.createPipeValue(value);
-  return createCustomStartFunction(_value, { config });
+  return createPipeCoreConfig(_value, { config });
 }
