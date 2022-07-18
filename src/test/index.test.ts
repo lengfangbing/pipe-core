@@ -1,5 +1,5 @@
 /* eslint-disable no-undef */
-import { createPipeCore } from '../index';
+import { createPipeCore } from '../core';
 
 const _value = {
   name: 'pipe-core',
@@ -81,7 +81,7 @@ test('test setValue process', async () => {
       a++;
       expect(name).toBe('changed pipe-core');
     })
-    .getValue((value, set) => {
+    .getValue((value, _, set) => {
       expect(a).toBe(2);
       const { location, ...val } = value;
       expect(val).toEqual({
@@ -104,7 +104,7 @@ test('test setValue process', async () => {
     .getDoubleAge(age => {
       expect(age).toBe(200);
     })
-    .pipe((_, set) => {
+    .pipe((_, __, set) => {
       set({ age: 1 });
     })
     .pipeEnd()
@@ -112,6 +112,92 @@ test('test setValue process', async () => {
       const { location, ...val } = value;
       expect(val).toEqual({
         name: 'set age',
+        age: 1,
+        nick: {
+          pipe: 1,
+          core: 2
+        },
+        city: [1, 2, 3]
+      });
+    });
+});
+
+test('test empty value core', async () => {
+  const valueCore = createPipeCore(_value);
+
+  await valueCore
+    .pipeEnd()
+    .then(value => {
+      const { location, ...val } = value;
+      expect(val).toEqual({
+        name: 'pipe-core',
+        age: 1,
+        nick: {
+          pipe: 1,
+          core: 2
+        },
+        city: [1, 2, 3]
+      });
+    });
+});
+
+test('test use piece pipe core process', async () => {
+  const valueCore = createPipeCore(_value, customStartFunction);
+  // 计数器
+  let count = 0;
+  await valueCore
+    .getName(name => {
+      count++;
+      expect(name).toBe('pipe-core');
+      return name;
+    })
+    .pipe<string>((name, piecePipe, set) => {
+      expect(count).toBe(1);
+      count++;
+      set({ name: 'new pipe-core' });
+      piecePipe
+        .getName(() => {
+          expect(count).toBe(2);
+          count++;
+        });
+    })
+    .getValue((_, piecePipe) => {
+      expect(count).toBe(3);
+      count++;
+      piecePipe
+        .getName(name => {
+          expect(count).toBe(4);
+          count++;
+          expect(name).toBe('new pipe-core');
+          return name;
+        })
+        .pipe<string>((name, piecePipe) => {
+          expect(count).toBe(5);
+          count++;
+          piecePipe
+            .getName(_name => {
+              expect(count).toBe(6);
+              count++;
+              return _name;
+            })
+            .pipe<string>((_name, _, set) => {
+              expect(count).toBe(7);
+              count++;
+              set({ name: 'pipe-core' });
+            });
+        });
+    })
+    .getName(name => {
+      expect(count).toBe(8);
+      count++;
+      expect(name).toBe('pipe-core');
+    })
+    .pipeEnd()
+    .then(value => {
+      expect(count).toBe(9);
+      const { location, ...rest } = value;
+      expect(rest).toEqual({
+        name: 'pipe-core',
         age: 1,
         nick: {
           pipe: 1,
@@ -150,7 +236,7 @@ test('test createPipeCore case', async () => {
       expect(city).toEqual([1, 2, 3]);
       return city.reverse();
     })
-    .pipe<Array<number>>((changedCity, update) => {
+    .pipe<Array<number>>((changedCity, _, update) => {
       expect(changedCity).toEqual([3, 2, 1]);
       update({ city: [3, 2, 1] });
     })
@@ -163,7 +249,7 @@ test('test createPipeCore case', async () => {
     .getLocation(location => {
       expect(location).toBe('Asia');
     })
-    .pipe<unknown>((val, update) => {
+    .pipe<unknown>((val, _, update) => {
       expect(val).toBeUndefined();
       update({ location: () => 'Europe' });
     })
@@ -173,7 +259,7 @@ test('test createPipeCore case', async () => {
         core: nick.pipe
       };
     })
-    .pipe<typeof _value['nick']>((nick, update) => {
+    .pipe<typeof _value['nick']>((nick, _, update) => {
       expect(nick).toEqual({
         pipe: 2,
         core: 1

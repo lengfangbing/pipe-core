@@ -1,4 +1,4 @@
-import { Action, CustomStartFunctionValue } from './types';
+import { Action, CustomStartConfig } from './types';
 
 export class PipeValueFactory<Value extends Record<string, any>> {
   // value source
@@ -8,9 +8,9 @@ export class PipeValueFactory<Value extends Record<string, any>> {
   // 保存方法返回值的Map
   returnValueMap: Map<(...args: any) => any, any> = new Map();
   // extend functions
-  private extendFunctions: Array<CustomStartFunctionValue<Value>[string]> = [];
+  private extendFunctions: Array<CustomStartConfig<Value>[string]> = [];
   // just for temp once extend functions
-  private extendOnceFunctions: Array<CustomStartFunctionValue<Value>[string]> = [];
+  private extendOnceFunctions: Array<CustomStartConfig<Value>[string]> = [];
 
   constructor (value: Value) {
     this.value = value;
@@ -31,9 +31,26 @@ export class PipeValueFactory<Value extends Record<string, any>> {
     this.actionList = [];
   }
 
+  private findActionValueForEachList (
+    actionValue: Action['value'],
+    list: Array<Action>
+  ): Action | void {
+    for (const action of list) {
+      if (actionValue === action.value) {
+        return action;
+      }
+      if (action.list && action.list.length > 0) {
+        const loopAction = this.findActionValueForEachList(actionValue, action.list);
+        if (loopAction) {
+          return loopAction;
+        }
+      }
+    }
+  }
+
   // 在Action的list中添加一项Action
   appendActionItemByActionValue (action: Action, actionValue: Action['value']) {
-    const findActionValue = this.actionList.find(item => item.value === actionValue);
+    const findActionValue = this.findActionValueForEachList(actionValue, this.actionList);
     if (findActionValue) {
       const newList = findActionValue.list || [];
       newList.push(action);

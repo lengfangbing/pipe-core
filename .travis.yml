@@ -1,4 +1,12 @@
 language: node_js
 node_js:
-  - stable
+  - lts/*
 script: npm run test
+env:
+  global:
+    secure: T2MOQtXBInGigGZchm/nWFljclats3JKL6k/3d3WFPehsSpBbEiAiIwI7UAy5AET4PC3vMCcypeXfEaBz+V3OxIO0PkK4QfIyExF58UgJ9MJYNaxHu5bAOHwc4YmzOqIP8P+k3CfzKSFx1AyoULsAvSE4lYPhscnTJQVZFg5TDSLIB7YVKsxX2p9FZpZ6PzdZ4QCDuFdcf3/nk6Y3HfuZOORw/CkfuqKuNWTasNk2xW+Ys+9bCU5Hv7Akh+Ty1yzWfwKGVvzOq4o2q5Yh0SQqCW57+nNGF86hVl7cJGcfDrgpc0aqz0kWXOHuNsn/wE5d6hyVrAyRwGPfr9T/MLIGKI1Fxh3RNESnTM8JqNqhRQ6Ofm+yyH30zGpeukN92rW/tLV16uSEoigmH3r5YaOwjd18bkmGkumXEtcjAOiaHpvcic/ka+TOwKOJXd2qbjW+PRuKGfYBr3iWeGQggp2nWWu2QUrTjxrXUlJxiAg/A6gupTC1bJLn9qyXNhX0ft+GSGq0W7Q4d08rBuI86tPi/Ln0U52y1m40/i/0cXEg8hAMpc34q5ZwgrfoFeJ6k82nOJSnuvtsC+DS/OnKOZrk3M0RGRyI5MFHbJuGH5zn9DkuuqzBXuOAkjwGEJXGlinuIZnr1PD/3I/I2Cz5dTVAyIFBppo4jT4Q0AnShrh00g=
+jobs:
+  include:
+    - stage: Produce Coverage
+      node_js: lts/*
+      script: jest --coverage && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js && rm -rf ./coverage
